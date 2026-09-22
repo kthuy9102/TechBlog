@@ -1,0 +1,39 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api
+    networks: [blog-net]
+ 
+  api:
+    build: ./api
+    environment:
+      DB_HOST: db
+      CACHE_HOST: cache
+    depends_on:
+      - db
+      - cache
+    networks: [blog-net]
+ 
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: techblog
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks: [blog-net]
+ 
+  cache:
+    image: redis:7-alpine
+    networks: [blog-net]
+ 
+volumes:
+  db-data:
+ 
+networks:
+  blog-net:
